@@ -1,0 +1,17 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Slim3 Libraries 1.0.4
+Bundle-SymbolicName: com.ashigeru.slim3.libraries-1.0.4;singleton:=true
+Bundle-Version: 1.0.0
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Bundle-ClassPath: plugin.jar,
+ export/slim3-1.0.4.jar,
+ export/slim3-gen-1.0.4.jar
+Require-Bundle: org.eclipse.core.runtime,
+ com.ashigeru.slim3.eclipse.core,
+ org.eclipse.jdt.core,
+ org.eclipse.core.resources,
+ org.eclipse.jdt.apt.core
+Bundle-Activator: com.ashigeru.slim3.libraries.internal.Activator
+Bundle-Vendor: ashigeru
+Bundle-ActivationPolicy: lazy

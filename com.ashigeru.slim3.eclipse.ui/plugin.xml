@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+   <extension
+         point="org.eclipse.ui.propertyPages">
+      <page
+            name="Sample Page"
+            nameFilter="*.*"
+            class="com.ashigeru.slim3.eclipse.ui.properties.SamplePropertyPage"
+            id="com.ashigeru.slim3.eclipse.ui.properties.samplePropertyPage">
+         <enabledWhen>
+            <instanceof
+                  value="org.eclipse.core.resources.IProject">
+            </instanceof>
+         </enabledWhen>
+      </page>
+   </extension>
+   <extension
+         point="org.eclipse.ui.commands">
+      <command
+            id="com.ashigeru.slim3.eclipse.ui.addNature"
+            name="Add Slim3 Nature">
+      </command>
+      <command
+            id="com.ashigeru.slim3.eclipse.ui.removeNature"
+            name="Remove Slim3 Nature">
+      </command>
+   </extension>
+   <extension
+         point="org.eclipse.ui.handlers">
+      <handler
+            class="com.ashigeru.slim3.eclipse.ui.handlers.AddNatureHandler"
+            commandId="com.ashigeru.slim3.eclipse.ui.addNature">
+         <enabledWhen>
+            <with
+                  variable="activeMenuSelection">
+               <count
+                     value="1">
+               </count>
+               <iterate
+                     ifEmpty="false"
+                     operator="or">
+                  <adapt
+                        type="org.eclipse.core.resources.IProject">
+                  </adapt>
+               </iterate>
+            </with>
+         </enabledWhen>
+      </handler>
+      <handler
+            class="com.ashigeru.slim3.eclipse.ui.handlers.RemoveNatureHandler"
+            commandId="com.ashigeru.slim3.eclipse.ui.removeNature">
+         <enabledWhen>
+            <with
+                  variable="activeMenuSelection">
+               <count
+                     value="1">
+               </count>
+               <iterate
+                     ifEmpty="false"
+                     operator="or">
+                  <adapt
+                        type="org.eclipse.core.resources.IProject">
+                  </adapt>
+               </iterate>
+            </with>
+         </enabledWhen>
+      </handler>
+   </extension>
+   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            locationURI="popup:org.eclipse.ui.popup.any">
+         <menu
+               id="com.ashigeru.slim3.eclipse.popup"
+               label="Slim3">
+            <command
+                  commandId="com.ashigeru.slim3.eclipse.ui.addNature"
+                  style="push">
+               <visibleWhen
+                     checkEnabled="true">
+               </visibleWhen>
+            </command>
+            <command
+                  commandId="com.ashigeru.slim3.eclipse.ui.removeNature"
+                  style="push">
+               <visibleWhen
+                     checkEnabled="true">
+               </visibleWhen>
+            </command>
+         </menu>
+      </menuContribution>
+   </extension>
+
+</plugin>

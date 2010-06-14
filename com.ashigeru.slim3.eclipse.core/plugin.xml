@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension-point id="library" name="Slim3 Library" schema="schema/library.exsd"/>
+   <extension
+         id="com.ashigeru.slim3.nature"
+         name="Slim3 Nature"
+         point="org.eclipse.core.resources.natures">
+      <runtime>
+         <run
+               class="com.ashigeru.slim3.eclipse.core.project.Slim3Nature">
+         </run>
+      </runtime>
+      <requires-nature
+            id="org.eclipse.jdt.core.javanature">
+      </requires-nature>
+   </extension>
+   <extension
+         id="com.ashigeru.slim3.eclipse"
+         name="Slim3 Generators"
+         point="org.eclipse.jdt.apt.core.annotationProcessorFactory">
+      <factories
+            enableDefault="true">
+         <factory
+               class="com.ashigeru.slim3.eclipse.internal.core.apt.Slim3AnnotationProcessorFactory">
+         </factory>
+      </factories>
+   </extension>
+
+</plugin>
