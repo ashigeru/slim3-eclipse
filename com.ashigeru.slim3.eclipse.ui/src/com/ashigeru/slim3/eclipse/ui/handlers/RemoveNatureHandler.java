@@ -27,7 +27,6 @@ import com.ashigeru.slim3.eclipse.internal.ui.LogUtil;
 
 /**
  * Slim3のネイチャを選択しているプロジェクトから削除する。
- * @version 2010
  */
 public class RemoveNatureHandler extends AbstractHandler {
 

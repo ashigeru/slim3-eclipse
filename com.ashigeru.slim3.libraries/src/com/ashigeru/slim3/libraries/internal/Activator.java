@@ -27,7 +27,7 @@ public class Activator extends Plugin {
     /**
      *  The plug-in ID
      */
-    public static final String PLUGIN_ID = "org.ashigeru.slim3.libraries";
+    public static final String PLUGIN_ID = "com.ashigeru.slim3.libraries";
 
     // The shared instance
     private static Activator plugin;
