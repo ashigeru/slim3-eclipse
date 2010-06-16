@@ -25,23 +25,23 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 
-import com.ashigeru.slim3.eclipse.core.project.Slim3Nature;
+import com.ashigeru.slim3.eclipse.core.project.Slim3ClasspathContainer;
 
 /**
- * Slim3のネイチャを選択しているプロジェクトに追加する。
+ * Slim3のクラスライブラリを選択しているプロジェクトに追加する。
  */
-public class AddNatureHandler extends AbstractHandler {
+public class AddClassLibraryHandler extends AbstractHandler {
 
     public Object execute(ExecutionEvent event) throws ExecutionException {
         final IProject project = ProjectHandlerUtil.getTargetProject(event);
         if (project == null) {
             return null;
         }
-        WorkspaceJob job = new WorkspaceJob("Adding Slim3 Nature") {
+        WorkspaceJob job = new WorkspaceJob("Adding Slim3 Class Library") {
             @Override
             public IStatus runInWorkspace(IProgressMonitor monitor)
                     throws CoreException {
-                Slim3Nature.add(monitor, project);
+                Slim3ClasspathContainer.add(monitor, project);
                 return Status.OK_STATUS;
             }
         };

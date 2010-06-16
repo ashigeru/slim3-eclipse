@@ -19,11 +19,13 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 
 import com.ashigeru.slim3.eclipse.core.project.Slim3Nature;
-import com.ashigeru.slim3.eclipse.internal.ui.LogUtil;
 
 /**
  * Slim3のネイチャを選択しているプロジェクトから削除する。
@@ -31,17 +33,19 @@ import com.ashigeru.slim3.eclipse.internal.ui.LogUtil;
 public class RemoveNatureHandler extends AbstractHandler {
 
     public Object execute(ExecutionEvent event) throws ExecutionException {
-        IProject project = ProjectHandlerUtil.getTargetProject(event);
+        final IProject project = ProjectHandlerUtil.getTargetProject(event);
         if (project == null) {
             return null;
         }
-        try {
-            Slim3Nature.remove(new NullProgressMonitor(), project);
-            return null;
-        }
-        catch (CoreException e) {
-            LogUtil.log(e);
-            return null;
-        }
+        WorkspaceJob job = new WorkspaceJob("Removing Class Library") {
+            @Override
+            public IStatus runInWorkspace(IProgressMonitor monitor)
+                    throws CoreException {
+                Slim3Nature.remove(monitor, project);
+                return Status.OK_STATUS;
+            }
+        };
+        job.schedule();
+        return null;
     }
 }

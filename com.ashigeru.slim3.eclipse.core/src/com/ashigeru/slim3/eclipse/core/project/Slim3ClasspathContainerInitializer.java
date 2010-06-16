@@ -50,7 +50,7 @@ public class Slim3ClasspathContainerInitializer extends
         Slim3Nature slim3 = Slim3Nature.create(project.getProject());
         Slim3Library library = slim3.getLibrary();
         if (library == null) {
-            return;
+            library = new UnknownSlim3Library("Not Specified");
         }
         JavaCore.setClasspathContainer(
             Slim3ClasspathContainer.PATH,

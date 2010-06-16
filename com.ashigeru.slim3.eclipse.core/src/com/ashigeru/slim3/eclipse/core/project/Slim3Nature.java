@@ -78,14 +78,14 @@ public class Slim3Nature implements IProjectNature {
             // FIXME for Debug
             SortedSet<Slim3Library> libs = Slim3EclipseCore.getLibraries();
             if (libs.isEmpty()) {
-                return getUnknown();
+                return null;
             }
             return libs.last();
         }
         Map<String, Slim3Library> all = Activator.getDefault().getLibraries();
         Slim3Library library = all.get(version);
         if (library == null) {
-            return getUnknown();
+            return null;
         }
         return library;
     }
@@ -110,10 +110,6 @@ public class Slim3Nature implements IProjectNature {
 
     private IEclipsePreferences getPreferences() {
         return Activator.getDefault().getPreferences(project);
-    }
-
-    private Slim3Library getUnknown() {
-        return new UnknownSlim3Library();
     }
 
     /**
@@ -219,7 +215,7 @@ public class Slim3Nature implements IProjectNature {
         if (project == null) {
             throw new IllegalArgumentException("project is null"); //$NON-NLS-1$
         }
-        monitor.beginTask("Removing Slim3 Nature", 3);
+        monitor.beginTask("Removing Slim3 Nature", 5);
         try {
             if (monitor.isCanceled()) {
                 throw new OperationCanceledException();
@@ -232,6 +228,10 @@ public class Slim3Nature implements IProjectNature {
             }
             description.setNatureIds(natures.toArray(new String[natures.size()]));
             monitor.worked(1);
+
+            Slim3ClasspathContainer.remove(
+                new SubProgressMonitor(monitor, 2),
+                project);
 
             project.setDescription(
                 description,

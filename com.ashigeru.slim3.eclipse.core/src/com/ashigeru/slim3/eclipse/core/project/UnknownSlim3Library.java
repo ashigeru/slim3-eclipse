@@ -23,19 +23,28 @@ import org.eclipse.jdt.core.IClasspathEntry;
 import com.sun.mirror.apt.AnnotationProcessorFactory;
 
 /**
- * 存在しないライブラリ。
+ * ダミー表示用の存在しないライブラリ。
  * @author ashigeru
  */
 public class UnknownSlim3Library extends Slim3Library {
 
+    private String version;
+
     /**
-     * 不明なバージョン。
+     * インスタンスを生成する。
+     * @param version 表記するバージョン
+     * @throws IllegalArgumentException 引数に{@code null}が含まれる場合
      */
-    public static final String INVALID_VERSION = "INVALID";
+    public UnknownSlim3Library(String version) {
+        if (version == null) {
+            throw new IllegalArgumentException("version is null"); //$NON-NLS-1$
+        }
+        this.version = version;
+    }
 
     @Override
     public String getVersion() {
-        return INVALID_VERSION;
+        return version;
     }
 
     @Override

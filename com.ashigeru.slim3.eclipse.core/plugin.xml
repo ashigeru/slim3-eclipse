@@ -26,5 +26,25 @@
          </factory>
       </factories>
    </extension>
+   <extension
+         point="org.eclipse.jdt.core.classpathContainerInitializer">
+      <classpathContainerInitializer
+            class="com.ashigeru.slim3.eclipse.core.project.Slim3ClasspathContainerInitializer"
+            id="com.ashigeru.slim3.eclipse.core.coreLibraries">
+      </classpathContainerInitializer>
+   </extension>
+   <extension
+         point="org.eclipse.core.expressions.definitions">
+   </extension>
+   <extension
+         point="org.eclipse.core.expressions.propertyTesters">
+      <propertyTester
+            class="com.ashigeru.slim3.eclipse.internal.core.expressions.Slim3ProjectPropertyTester"
+            id="com.ashigeru.slim3.eclipse.core.propertyTester.project"
+            namespace="com.ashigeru.slim3.project"
+            properties="hasNature,hasClassLibrary"
+            type="org.eclipse.core.resources.IProject">
+      </propertyTester>
+   </extension>
 
 </plugin>

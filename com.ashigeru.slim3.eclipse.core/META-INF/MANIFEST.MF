@@ -6,6 +6,7 @@ Bundle-Version: 0.1.0.qualifier
 Bundle-Activator: com.ashigeru.slim3.eclipse.internal.core.Activator
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.resources,
+ org.eclipse.core.expressions,
  org.eclipse.jdt.core,
  org.eclipse.jdt.apt.core
 Bundle-ActivationPolicy: lazy

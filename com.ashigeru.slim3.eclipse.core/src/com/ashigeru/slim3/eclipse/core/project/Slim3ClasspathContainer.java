@@ -19,6 +19,7 @@ import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.List;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -29,6 +30,8 @@ import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
+
+import com.ashigeru.slim3.eclipse.internal.core.LogUtil;
 
 /**
  * 問題作成時に利用するクラスライブラリのコンテナ。
@@ -79,13 +82,31 @@ public class Slim3ClasspathContainer implements IClasspathContainer {
      * @throws JavaModelException 対象のプロジェクト情報を取得するのに失敗した場合
      * @throws IllegalArgumentException 引数に{@code null}が含まれる場合
      */
-    public static boolean existsIn(IJavaProject project)
+    public static boolean existsIn(IProject project)
             throws JavaModelException {
         if (project == null) {
             throw new IllegalArgumentException("project is null"); //$NON-NLS-1$
         }
-        IClasspathEntry[] classpath = project.getRawClasspath();
+        IJavaProject javaProject = toJavaProject(project);
+        if (javaProject == null) {
+            return false;
+        }
+        IClasspathEntry[] classpath = javaProject.getRawClasspath();
         return index(classpath) >= 0;
+    }
+
+    private static IJavaProject toJavaProject(IProject project) {
+        assert project != null;
+        try {
+            if (project.hasNature(JavaCore.NATURE_ID)) {
+                return JavaCore.create(project);
+            }
+        }
+        catch (CoreException e) {
+            LogUtil.log(e);
+            return null;
+        }
+        return null;
     }
 
     /**
@@ -100,7 +121,7 @@ public class Slim3ClasspathContainer implements IClasspathContainer {
      */
     public static void add(
             IProgressMonitor monitor,
-            IJavaProject project) throws JavaModelException {
+            IProject project) throws JavaModelException {
         if (monitor == null) {
             throw new IllegalArgumentException("monitor is null"); //$NON-NLS-1$
         }
@@ -109,7 +130,11 @@ public class Slim3ClasspathContainer implements IClasspathContainer {
         }
         monitor.beginTask("Adding Slim3 Classpath Container", 2);
         try {
-            IClasspathEntry[] classpath = project.readRawClasspath();
+            IJavaProject javaProject = toJavaProject(project);
+            if (javaProject == null) {
+                return;
+            }
+            IClasspathEntry[] classpath = javaProject.readRawClasspath();
             if (index(classpath) >= 0) {
                 return;
             }
@@ -120,7 +145,7 @@ public class Slim3ClasspathContainer implements IClasspathContainer {
                     JavaCore.newContainerEntry(Slim3ClasspathContainer.PATH);
             monitor.worked(1);
 
-            project.setRawClasspath(
+            javaProject.setRawClasspath(
                 newClasspath,
                 new SubProgressMonitor(monitor, 1));
         }
@@ -141,7 +166,7 @@ public class Slim3ClasspathContainer implements IClasspathContainer {
      */
     public static void remove(
             IProgressMonitor monitor,
-            IJavaProject project) throws JavaModelException {
+            IProject project) throws JavaModelException {
         if (monitor == null) {
             throw new IllegalArgumentException("monitor is null"); //$NON-NLS-1$
         }
@@ -150,7 +175,11 @@ public class Slim3ClasspathContainer implements IClasspathContainer {
         }
         monitor.beginTask("Removing Slim3 Classpath Container", 2);
         try {
-            IClasspathEntry[] classpath = project.readRawClasspath();
+            IJavaProject javaProject = toJavaProject(project);
+            if (javaProject == null) {
+                return;
+            }
+            IClasspathEntry[] classpath = javaProject.readRawClasspath();
             int index = index(classpath);
             if (index < 0) {
                 return;
@@ -170,7 +199,7 @@ public class Slim3ClasspathContainer implements IClasspathContainer {
             }
             monitor.worked(1);
 
-            project.setRawClasspath(
+            javaProject.setRawClasspath(
                 newClasspath,
                 new SubProgressMonitor(monitor, 1));
         }

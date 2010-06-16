@@ -19,19 +19,29 @@
    <extension
          point="org.eclipse.ui.commands">
       <command
-            id="com.ashigeru.slim3.eclipse.ui.addNature"
+            id="com.ashigeru.slim3.eclipse.ui.command.addNature"
             name="Add Slim3 Nature">
       </command>
       <command
-            id="com.ashigeru.slim3.eclipse.ui.removeNature"
+            id="com.ashigeru.slim3.eclipse.ui.command.removeNature"
             name="Remove Slim3 Nature">
+      </command>
+      <command
+            id="com.ashigeru.slim3.eclipse.ui.command.addClassLibrary"
+            name="Add Slim3 Class Library">
+      </command>
+      <command
+            id="com.ashigeru.slim3.eclipse.ui.command.removeClassLibrary"
+            name="Remove Slim3 Class Library">
       </command>
    </extension>
    <extension
          point="org.eclipse.ui.handlers">
       <handler
-            class="com.ashigeru.slim3.eclipse.ui.handlers.AddNatureHandler"
-            commandId="com.ashigeru.slim3.eclipse.ui.addNature">
+            commandId="com.ashigeru.slim3.eclipse.ui.command.addNature">
+         <class
+               class="com.ashigeru.slim3.eclipse.ui.handlers.AddNatureHandler">
+         </class>
          <enabledWhen>
             <with
                   variable="activeMenuSelection">
@@ -43,14 +53,20 @@
                      operator="or">
                   <adapt
                         type="org.eclipse.core.resources.IProject">
+                     <test
+                           forcePluginActivation="true"
+                           property="com.ashigeru.slim3.project.hasNature"
+                           value="false">
+                     </test>
                   </adapt>
                </iterate>
             </with>
          </enabledWhen>
       </handler>
       <handler
-            class="com.ashigeru.slim3.eclipse.ui.handlers.RemoveNatureHandler"
-            commandId="com.ashigeru.slim3.eclipse.ui.removeNature">
+            commandId="com.ashigeru.slim3.eclipse.ui.command.removeNature">
+         <class
+               class="com.ashigeru.slim3.eclipse.ui.handlers.RemoveNatureHandler"></class>
          <enabledWhen>
             <with
                   variable="activeMenuSelection">
@@ -62,6 +78,73 @@
                      operator="or">
                   <adapt
                         type="org.eclipse.core.resources.IProject">
+                     <test
+                           forcePluginActivation="true"
+                           property="com.ashigeru.slim3.project.hasNature"
+                           value="true">
+                     </test>
+                  </adapt>
+               </iterate>
+            </with>
+         </enabledWhen>
+      </handler>
+      <handler
+            commandId="com.ashigeru.slim3.eclipse.ui.command.addClassLibrary">
+         <class
+               class="com.ashigeru.slim3.eclipse.ui.handlers.AddClassLibraryHandler">
+         </class>
+         <enabledWhen>
+            <with
+                  variable="activeMenuSelection">
+               <count
+                     value="1">
+               </count>
+               <iterate
+                     ifEmpty="false"
+                     operator="or">
+                  <adapt
+                        type="org.eclipse.core.resources.IProject">
+                     <test
+                           forcePluginActivation="true"
+                           property="com.ashigeru.slim3.project.hasNature"
+                           value="true">
+                     </test>
+                     <test
+                           forcePluginActivation="true"
+                           property="com.ashigeru.slim3.project.hasClassLibrary"
+                           value="false">
+                     </test>
+                  </adapt>
+               </iterate>
+            </with>
+         </enabledWhen>
+      </handler>
+      <handler
+            commandId="com.ashigeru.slim3.eclipse.ui.command.removeClassLibrary">
+         <class
+               class="com.ashigeru.slim3.eclipse.ui.handlers.RemoveClassLibraryHandler">
+         </class>
+         <enabledWhen>
+            <with
+                  variable="activeMenuSelection">
+               <count
+                     value="1">
+               </count>
+               <iterate
+                     ifEmpty="false"
+                     operator="or">
+                  <adapt
+                        type="org.eclipse.core.resources.IProject">
+                     <test
+                           forcePluginActivation="true"
+                           property="com.ashigeru.slim3.project.hasNature"
+                           value="true">
+                     </test>
+                     <test
+                           forcePluginActivation="true"
+                           property="com.ashigeru.slim3.project.hasClassLibrary"
+                           value="true">
+                     </test>
                   </adapt>
                </iterate>
             </with>
@@ -75,15 +158,32 @@
          <menu
                id="com.ashigeru.slim3.eclipse.popup"
                label="Slim3">
+            <visibleWhen
+                  checkEnabled="true">
+            </visibleWhen>
             <command
-                  commandId="com.ashigeru.slim3.eclipse.ui.addNature"
+                  commandId="com.ashigeru.slim3.eclipse.ui.command.addNature"
                   style="push">
                <visibleWhen
                      checkEnabled="true">
                </visibleWhen>
             </command>
             <command
-                  commandId="com.ashigeru.slim3.eclipse.ui.removeNature"
+                  commandId="com.ashigeru.slim3.eclipse.ui.command.removeNature"
+                  style="push">
+               <visibleWhen
+                     checkEnabled="true">
+               </visibleWhen>
+            </command>
+            <command
+                  commandId="com.ashigeru.slim3.eclipse.ui.command.addClassLibrary"
+                  style="push">
+               <visibleWhen
+                     checkEnabled="true">
+               </visibleWhen>
+            </command>
+            <command
+                  commandId="com.ashigeru.slim3.eclipse.ui.command.removeClassLibrary"
                   style="push">
                <visibleWhen
                      checkEnabled="true">
