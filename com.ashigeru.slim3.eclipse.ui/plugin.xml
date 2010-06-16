@@ -5,14 +5,18 @@
    <extension
          point="org.eclipse.ui.propertyPages">
       <page
-            name="Sample Page"
-            nameFilter="*.*"
-            class="com.ashigeru.slim3.eclipse.ui.properties.SamplePropertyPage"
-            id="com.ashigeru.slim3.eclipse.ui.properties.samplePropertyPage">
+            class="com.ashigeru.slim3.eclipse.ui.properties.Slim3PropertyPage"
+            id="com.ashigeru.slim3.eclipse.ui.propertyPage.slim3"
+            name="Slim3">
          <enabledWhen>
-            <instanceof
-                  value="org.eclipse.core.resources.IProject">
-            </instanceof>
+            <adapt
+                  type="org.eclipse.core.resources.IProject">
+               <test
+                     forcePluginActivation="false"
+                     property="org.eclipse.core.resources.projectNature"
+                     value="org.eclipse.jdt.core.javanature">
+               </test>
+            </adapt>
          </enabledWhen>
       </page>
    </extension>
@@ -53,6 +57,10 @@
                      operator="or">
                   <adapt
                         type="org.eclipse.core.resources.IProject">
+                     <test
+                           property="org.eclipse.core.resources.projectNature"
+                           value="org.eclipse.jdt.core.javanature">
+                     </test>
                      <test
                            forcePluginActivation="true"
                            property="com.ashigeru.slim3.project.hasNature"
