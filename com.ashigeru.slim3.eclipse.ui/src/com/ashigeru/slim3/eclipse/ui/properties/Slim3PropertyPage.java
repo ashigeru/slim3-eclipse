@@ -15,17 +15,38 @@
  */
 package com.ashigeru.slim3.eclipse.ui.properties;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.ProjectScope;
-import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.core.resources.IWorkspaceRunnable;
+import org.eclipse.core.resources.IncrementalProjectBuilder;
+import org.eclipse.core.runtime.Assert;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.OperationCanceledException;
+import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jface.layout.GridDataFactory;
+import org.eclipse.jface.layout.GridLayoutFactory;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.PropertyPage;
-import org.eclipse.ui.preferences.ScopedPreferenceStore;
+import org.eclipse.ui.progress.IProgressService;
 
-import com.ashigeru.slim3.eclipse.internal.ui.Activator;
+import com.ashigeru.slim3.eclipse.core.Slim3EclipseCore;
+import com.ashigeru.slim3.eclipse.core.project.Slim3Library;
+import com.ashigeru.slim3.eclipse.core.project.Slim3ProjectProperties;
+import com.ashigeru.slim3.eclipse.internal.ui.LogUtil;
 
 /**
  * Property page for Slim3.
@@ -33,40 +54,223 @@ import com.ashigeru.slim3.eclipse.internal.ui.Activator;
  */
 public class Slim3PropertyPage extends PropertyPage {
 
-    @Override
-    protected IPreferenceStore doGetPreferenceStore() {
+    private static final int INDENT_WIDTH = 10;
+
+    List<Slim3Library> availableLibraries;
+
+    Button enableSlim3Button;
+
+    Label versionLabel;
+
+    Combo versionList;
+
+    Button useClassLibraryButton;
+
+    IProject getTarget() {
         IProject project = (IProject) getElement().getAdapter(IProject.class);
-        ProjectScope scope = new ProjectScope(project);
-        ScopedPreferenceStore store = new ScopedPreferenceStore(
-            scope,
-            Activator.PLUGIN_ID);
-        return store;
+        Assert.isNotNull(project);
+        return project;
     }
 
-	@Override
-    protected Control createContents(Composite parent) {
-		Composite composite = new Composite(parent, SWT.NONE);
-		GridLayout layout = new GridLayout();
-		composite.setLayout(layout);
+    @Override
+    protected Control createContents(Composite root) {
+        availableLibraries =
+                new ArrayList<Slim3Library>(Slim3EclipseCore.getLibraries());
+        Collections.reverse(availableLibraries);
 
-		return composite;
-	}
+        Composite parent = new Composite(root, SWT.NONE);
+        GridLayoutFactory.swtDefaults()
+            .numColumns(2)
+            .applyTo(parent);
+        GridDataFactory.fillDefaults()
+            .grab(true, true)
+            .applyTo(parent);
 
-	@Override
+        enableSlim3Button = new Button(parent, SWT.CHECK);
+        enableSlim3Button.setText("Enable Slim3");
+        GridDataFactory.swtDefaults()
+            .align(SWT.LEFT, SWT.CENTER)
+            .span(2, 1)
+            .applyTo(enableSlim3Button);
+
+        Label separator = new Label(parent, SWT.SEPARATOR | SWT.HORIZONTAL);
+        GridDataFactory.swtDefaults()
+            .align(SWT.FILL, SWT.BEGINNING)
+            .grab(true, false)
+            .span(2, 1)
+            .applyTo(separator);
+
+        versionLabel = new Label(parent, SWT.NULL);
+        versionLabel.setText("Slim3 Version:");
+        GridDataFactory.swtDefaults()
+            .align(SWT.LEFT, SWT.CENTER)
+            .indent(INDENT_WIDTH, 0)
+            .applyTo(versionLabel);
+
+        versionList = new Combo(parent, SWT.DROP_DOWN | SWT.READ_ONLY);
+        for (Slim3Library library : availableLibraries) {
+            versionList.add(library.getVersion());
+        }
+        if (availableLibraries.isEmpty() == false) {
+            versionList.select(0);
+        }
+        GridDataFactory.swtDefaults()
+            .align(SWT.LEFT, SWT.CENTER)
+            .applyTo(versionList);
+
+        useClassLibraryButton = new Button(parent, SWT.CHECK);
+        useClassLibraryButton.setText("Use Slim3 Class Libraries");
+        GridDataFactory.swtDefaults()
+            .align(SWT.LEFT, SWT.CENTER)
+            .indent(INDENT_WIDTH, 0)
+            .span(2, 1)
+            .applyTo(useClassLibraryButton);
+
+        applyToFields(Slim3ProjectProperties.load(getTarget()));
+        enableSlim3Button.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                onEnableChanged();
+            }
+        });
+        versionList.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                onVersionChanged();
+            }
+        });
+        useClassLibraryButton.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                onUserClassLibraryChanged();
+            }
+        });
+        onEnableChanged();
+        applyDialogFont(parent);
+        return parent;
+    }
+
+    void onEnableChanged() {
+        boolean enable = enableSlim3Button.getSelection();
+        if (enable && availableLibraries.isEmpty()) {
+            setErrorMessage("利用可能なライブラリがありません");
+            setDetailPartEnabled(false);
+        }
+        else if (enable) {
+            setErrorMessage(null);
+            setDetailPartEnabled(true);
+        }
+        else {
+            setErrorMessage(null);
+            setDetailPartEnabled(false);
+        }
+    }
+
+    private void setDetailPartEnabled(boolean enable) {
+        versionLabel.setEnabled(enable);
+        versionList.setEnabled(enable);
+        useClassLibraryButton.setEnabled(enable);
+    }
+
+    void onVersionChanged() {
+        // do nothing
+    }
+
+    void onUserClassLibraryChanged() {
+        // do nothing
+    }
+
+    @Override
     protected void performDefaults() {
-	    // TODO
-	}
+        Slim3ProjectProperties defaults = Slim3ProjectProperties
+            .createDefaults();
+        applyToFields(defaults);
+    }
 
-	@Override
-	protected void performApply() {
-	    // TODO performApply 2010/06/17 0:32:42
-	    super.performApply();
-	}
-
-	@Override
+    @Override
     public boolean performOk() {
-		// TODO
-		return true;
-	}
+        Slim3ProjectProperties properties = collectFromFields();
+        if (isModified(properties)) {
+            properties.apply(getTarget());
+            rebuild();
+        }
+        else {
+            properties.apply(getTarget());
+        }
+        return true;
+    }
 
+    private boolean isModified(Slim3ProjectProperties properties) {
+        assert properties != null;
+        Slim3ProjectProperties origin = Slim3ProjectProperties
+            .load(getTarget());
+        return properties.equals(origin);
+    }
+
+    private void applyToFields(Slim3ProjectProperties properties) {
+        assert properties != null;
+        enableSlim3Button.setSelection(properties.isEnabled());
+        String version = properties.getVersion();
+        if (availableLibraries.isEmpty()) {
+            versionList.select(0);
+        }
+        else {
+            int index = version == null ? -1 : versionList.indexOf(version);
+            if (index >= 0) {
+                versionList.select(index);
+            }
+            else {
+                versionList.select(0);
+            }
+        }
+        useClassLibraryButton.setSelection(properties.isClassLibraryEnabled());
+    }
+
+    private Slim3ProjectProperties collectFromFields() {
+        Slim3ProjectProperties properties = new Slim3ProjectProperties();
+        properties.setEnabled(enableSlim3Button.getSelection());
+        if (availableLibraries.isEmpty()) {
+            properties.setVersion(null);
+        }
+        else {
+            int selection = versionList.getSelectionIndex();
+            properties.setVersion(availableLibraries.get(selection));
+        }
+        properties.setClassLibraryEnabled(useClassLibraryButton.getSelection());
+        return properties;
+    }
+
+    private void rebuild() {
+        try {
+            IProgressService progress = PlatformUI.getWorkbench()
+                .getProgressService();
+            progress.run(true, true, new IRunnableWithProgress() {
+                @Override
+                public void run(IProgressMonitor m1)
+                        throws InterruptedException {
+                    try {
+                        JavaCore.run(new IWorkspaceRunnable() {
+                            @Override
+                            public void run(IProgressMonitor m2)
+                                    throws CoreException {
+                                getTarget().build(
+                                    IncrementalProjectBuilder.CLEAN_BUILD,
+                                    m2);
+                            }
+                        }, m1);
+                    }
+                    catch (OperationCanceledException e) {
+                        throw new InterruptedException();
+                    }
+                    catch (CoreException e) {
+                        LogUtil.log(e);
+                    }
+                }
+            });
+        }
+        catch (Exception e) {
+            // フォークしているので通常は発生しないはず
+            LogUtil.log(IStatus.ERROR, "Cannot schedule clean building", e);
+        }
+    }
 }
