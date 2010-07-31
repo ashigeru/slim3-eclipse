@@ -79,20 +79,24 @@ public class Slim3ClasspathContainer implements IClasspathContainer {
      * @param project 対象のプロジェクト
      * @return 指定のプロジェクトにこのコンテナが追加されている場合に{@code true}、
      *     そうでない場合は{@code false}
-     * @throws JavaModelException 対象のプロジェクト情報を取得するのに失敗した場合
      * @throws IllegalArgumentException 引数に{@code null}が含まれる場合
      */
-    public static boolean existsIn(IProject project)
-            throws JavaModelException {
+    public static boolean isAdded(IProject project) {
         if (project == null) {
             throw new IllegalArgumentException("project is null"); //$NON-NLS-1$
         }
-        IJavaProject javaProject = toJavaProject(project);
-        if (javaProject == null) {
+        try {
+            IJavaProject javaProject = toJavaProject(project);
+            if (javaProject == null) {
+                return false;
+            }
+            IClasspathEntry[] classpath = javaProject.getRawClasspath();
+            return index(classpath) >= 0;
+        }
+        catch (JavaModelException e) {
+            LogUtil.log(e);
             return false;
         }
-        IClasspathEntry[] classpath = javaProject.getRawClasspath();
-        return index(classpath) >= 0;
     }
 
     private static IJavaProject toJavaProject(IProject project) {

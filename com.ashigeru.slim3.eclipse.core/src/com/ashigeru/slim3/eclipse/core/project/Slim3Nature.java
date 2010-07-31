@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedSet;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
@@ -30,7 +29,6 @@ import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 
-import com.ashigeru.slim3.eclipse.core.Slim3EclipseCore;
 import com.ashigeru.slim3.eclipse.internal.core.Activator;
 
 /**
@@ -47,6 +45,8 @@ public class Slim3Nature implements IProjectNature {
     private static final String K_SLIM3_VERSION = "slim3.version"; //$NON-NLS-1$
 
     private IProject project;
+
+    private IEclipsePreferences preferences;
 
     @Override
     public void configure() throws CoreException {
@@ -75,12 +75,7 @@ public class Slim3Nature implements IProjectNature {
     public Slim3Library getLibrary() {
         String version = getLibraryVersion();
         if (version == null) {
-            // FIXME for Debug
-            SortedSet<Slim3Library> libs = Slim3EclipseCore.getLibraries();
-            if (libs.isEmpty()) {
-                return null;
-            }
-            return libs.last();
+            return null;
         }
         Map<String, Slim3Library> all = Activator.getDefault().getLibraries();
         Slim3Library library = all.get(version);
@@ -101,15 +96,18 @@ public class Slim3Nature implements IProjectNature {
 
     /**
      * このプロジェクトで利用するライブラリのバージョン番号を設定する。
-     * @param version 設定するバージョン、ライブラリを利用しない場合は{@code null}
+     * @param version 設定するバージョン、指定しない場合は{@code null}
      */
     public void setLibraryVersion(String version) {
         IEclipsePreferences prefs = getPreferences();
         prefs.put(K_SLIM3_VERSION, version);
     }
 
-    private IEclipsePreferences getPreferences() {
-        return Activator.getDefault().getPreferences(project);
+    private synchronized IEclipsePreferences getPreferences() {
+        if (preferences == null) {
+            preferences = Activator.getDefault().getPreferences(project);
+        }
+        return preferences;
     }
 
     /**

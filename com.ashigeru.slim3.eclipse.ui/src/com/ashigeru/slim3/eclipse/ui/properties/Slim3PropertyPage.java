@@ -28,6 +28,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.operation.IRunnableWithProgress;
@@ -191,11 +192,17 @@ public class Slim3PropertyPage extends PropertyPage {
     public boolean performOk() {
         Slim3ProjectProperties properties = collectFromFields();
         if (isModified(properties)) {
-            properties.apply(getTarget());
+            try {
+                properties.apply(getTarget());
+            }
+            catch (CoreException e) {
+                LogUtil.log(e);
+                MessageDialog.openError(
+                    getShell(),
+                    null,
+                    e.getMessage());
+            }
             rebuild();
-        }
-        else {
-            properties.apply(getTarget());
         }
         return true;
     }
@@ -204,13 +211,13 @@ public class Slim3PropertyPage extends PropertyPage {
         assert properties != null;
         Slim3ProjectProperties origin = Slim3ProjectProperties
             .load(getTarget());
-        return properties.equals(origin);
+        return properties.equals(origin) == false;
     }
 
     private void applyToFields(Slim3ProjectProperties properties) {
         assert properties != null;
         enableSlim3Button.setSelection(properties.isEnabled());
-        String version = properties.getVersion();
+        String version = properties.getLibraryVersion();
         if (availableLibraries.isEmpty()) {
             versionList.select(0);
         }
@@ -230,11 +237,12 @@ public class Slim3PropertyPage extends PropertyPage {
         Slim3ProjectProperties properties = new Slim3ProjectProperties();
         properties.setEnabled(enableSlim3Button.getSelection());
         if (availableLibraries.isEmpty()) {
-            properties.setVersion(null);
+            properties.setLibraryVersion(null);
         }
         else {
             int selection = versionList.getSelectionIndex();
-            properties.setVersion(availableLibraries.get(selection));
+            Slim3Library selected = availableLibraries.get(selection);
+            properties.setLibraryVersion(selected.getVersion());
         }
         properties.setClassLibraryEnabled(useClassLibraryButton.getSelection());
         return properties;

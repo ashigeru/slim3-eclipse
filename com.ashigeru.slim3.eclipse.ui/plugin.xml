@@ -159,46 +159,4 @@
          </enabledWhen>
       </handler>
    </extension>
-   <extension
-         point="org.eclipse.ui.menus">
-      <menuContribution
-            locationURI="popup:org.eclipse.ui.popup.any">
-         <menu
-               id="com.ashigeru.slim3.eclipse.popup"
-               label="Slim3">
-            <visibleWhen
-                  checkEnabled="true">
-            </visibleWhen>
-            <command
-                  commandId="com.ashigeru.slim3.eclipse.ui.command.addNature"
-                  style="push">
-               <visibleWhen
-                     checkEnabled="true">
-               </visibleWhen>
-            </command>
-            <command
-                  commandId="com.ashigeru.slim3.eclipse.ui.command.removeNature"
-                  style="push">
-               <visibleWhen
-                     checkEnabled="true">
-               </visibleWhen>
-            </command>
-            <command
-                  commandId="com.ashigeru.slim3.eclipse.ui.command.addClassLibrary"
-                  style="push">
-               <visibleWhen
-                     checkEnabled="true">
-               </visibleWhen>
-            </command>
-            <command
-                  commandId="com.ashigeru.slim3.eclipse.ui.command.removeClassLibrary"
-                  style="push">
-               <visibleWhen
-                     checkEnabled="true">
-               </visibleWhen>
-            </command>
-         </menu>
-      </menuContribution>
-   </extension>
-
 </plugin>

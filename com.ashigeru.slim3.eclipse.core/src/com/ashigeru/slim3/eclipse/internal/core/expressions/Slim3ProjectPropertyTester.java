@@ -17,11 +17,9 @@ package com.ashigeru.slim3.eclipse.internal.core.expressions;
 
 import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.CoreException;
 
 import com.ashigeru.slim3.eclipse.core.project.Slim3ClasspathContainer;
 import com.ashigeru.slim3.eclipse.core.project.Slim3Nature;
-import com.ashigeru.slim3.eclipse.internal.core.LogUtil;
 
 /**
  * Slim3プロジェクトに関するテスター。
@@ -52,13 +50,7 @@ public class Slim3ProjectPropertyTester extends PropertyTester {
             return Slim3Nature.isAdded(project);
         }
         if ("hasClassLibrary".equals(property)) {
-            try {
-                return Slim3ClasspathContainer.existsIn(project);
-            }
-            catch (CoreException e) {
-                LogUtil.log(e);
-                return false;
-            }
+            return Slim3ClasspathContainer.isAdded(project);
         }
         return false;
     }

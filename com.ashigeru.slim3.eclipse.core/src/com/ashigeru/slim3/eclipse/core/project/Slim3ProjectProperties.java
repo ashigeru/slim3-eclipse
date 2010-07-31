@@ -16,6 +16,8 @@
 package com.ashigeru.slim3.eclipse.core.project;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.NullProgressMonitor;
 
 /**
  * Project properties for Slim3 Plug-in.
@@ -23,103 +25,149 @@ import org.eclipse.core.resources.IProject;
  */
 public class Slim3ProjectProperties {
 
+    private boolean enabled = false;
+
+    private boolean libraryEnabled = false;
+
+    private String libraryVersion = null;
+
     /**
-     * <p>
-     * </p>
-     * @param project
-     * @return
+     * 指定のプロジェクトに関連するSlim3の設定情報を返す。
+     * @param project 対象のプロジェクト
+     * @return 関連する設定情報
      * @throws IllegalArgumentException 引数に{@code null}が含まれる場合
      */
     public static Slim3ProjectProperties load(IProject project) {
-        // TODO load 2010/06/17 1:35:48
-        return new Slim3ProjectProperties();
+        if (project == null) {
+            throw new IllegalArgumentException("project must not be null"); //$NON-NLS-1$
+        }
+        Slim3Nature nature = Slim3Nature.create(project);
+        Slim3ProjectProperties result = createDefaults();
+        result.setEnabled(Slim3Nature.isAdded(project));
+        result.setClassLibraryEnabled(Slim3ClasspathContainer.isAdded(project));
+        result.setLibraryVersion(nature.getLibraryVersion());
+        return result;
     }
 
     /**
-     * <p>
-     * </p>
-     * @param project
+     * 指定のSlim3の設定を指定のプロジェクトに設定する。
+     * @param project 対象のプロジェクト
+     * @throws CoreException 設定に失敗した場合
      * @throws IllegalArgumentException 引数に{@code null}が含まれる場合
      */
-    public void apply(IProject project) {
-        // TODO apply 2010/06/17 21:42:16
-
+    public void apply(IProject project) throws CoreException {
+        if (project == null) {
+            throw new IllegalArgumentException("project must not be null"); //$NON-NLS-1$
+        }
+        Slim3Nature nature = Slim3Nature.create(project);
+        nature.setLibraryVersion(getLibraryVersion());
+        if (isEnabled()) {
+            Slim3Nature.add(new NullProgressMonitor(), project);
+            if (isClassLibraryEnabled()) {
+                Slim3ClasspathContainer.add(new NullProgressMonitor(), project);
+            }
+            else {
+                Slim3ClasspathContainer.remove(new NullProgressMonitor(), project);
+            }
+        }
+        else {
+            Slim3Nature.remove(new NullProgressMonitor(), project);
+        }
     }
 
     /**
-     * <p>
-     * </p>
-     * @return
-     * @throws IllegalArgumentException 引数に{@code null}が含まれる場合
+     * デフォルトの設定を新しく作成して返す。
+     * @return 作成した設定
      */
     public static Slim3ProjectProperties createDefaults() {
-        // TODO createDefaults 2010/06/17 21:44:33
         return new Slim3ProjectProperties();
     }
 
     /**
-     * <p>
-     * </p>
-     * @return
-     * @throws IllegalArgumentException 引数に{@code null}が含まれる場合
+     * Slim3の機能が有効である場合のみ{@code true}を返す。
+     * @return Slim3の機能が有効である場合に{@code true}
      */
     public boolean isEnabled() {
-        // TODO isEnabled 2010/06/17 23:54:03
-        return false;
+        return this.enabled;
     }
 
     /**
-     * <p>
-     * </p>
-     * @return
-     * @throws IllegalArgumentException 引数に{@code null}が含まれる場合
+     * Slim3の機能を有効化、または無効化する。
+     * @param enabled {@code true}の場合は有効化、{@code false}の場合は無効化する
      */
-    public String getVersion() {
-        // TODO getVersion 2010/06/17 23:54:23
-        return null;
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 
     /**
-     * <p>
-     * </p>
-     * @return
-     * @throws IllegalArgumentException 引数に{@code null}が含まれる場合
+     * Slim3のクラスライブラリが有効である場合のみ{@code true}を返す。
+     * @return Slim3のクラスライブラリが有効である場合に{@code true}
      */
     public boolean isClassLibraryEnabled() {
-        // TODO isClassLibraryEnabled 2010/06/17 23:58:55
-        return false;
+        return libraryEnabled;
     }
 
     /**
-     * <p>
-     * </p>
-     * @param selection
-     * @throws IllegalArgumentException 引数に{@code null}が含まれる場合
+     * Slim3のライブラリを有効化、または無効化する。
+     * @param enabled {@code true}の場合は有効化、{@code false}の場合は無効化する
      */
-    public void setEnabled(boolean selection) {
-        // TODO setEnabled 2010/06/18 0:00:09
-
+    public void setClassLibraryEnabled(boolean enabled) {
+        this.libraryEnabled = enabled;
     }
 
     /**
-     * <p>
-     * </p>
-     * @param slim3Library
-     * @throws IllegalArgumentException 引数に{@code null}が含まれる場合
+     * Slim3で利用するライブラリのバージョンを返す。
+     * @return ライブラリのバージョン文字列、未指定の場合は{@code null}
      */
-    public void setVersion(Slim3Library slim3Library) {
-        // TODO setVersion 2010/06/18 0:02:07
-
+    public String getLibraryVersion() {
+        return libraryVersion;
     }
 
     /**
-     * <p>
-     * </p>
-     * @param selection
-     * @throws IllegalArgumentException 引数に{@code null}が含まれる場合
+     * Slim3で利用するライブラリのバージョンを設定する。
+     * @param version ライブラリのバージョン文字列、利用しない場合は{@code null}
      */
-    public void setClassLibraryEnabled(boolean selection) {
-        // TODO setClassLibraryEnabled 2010/06/18 0:02:52
+    public void setLibraryVersion(String version) {
+        this.libraryVersion = version;
+    }
 
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + (this.enabled ? 1231 : 1237);
+        result = prime * result + (this.libraryEnabled ? 1231 : 1237);
+        result = prime * result
+                + (libraryVersion == null ? 0 : libraryVersion.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        Slim3ProjectProperties other = (Slim3ProjectProperties) obj;
+        if (this.enabled != other.enabled) {
+            return false;
+        }
+        if (this.libraryEnabled != other.libraryEnabled) {
+            return false;
+        }
+        if (this.libraryVersion == null) {
+            if (other.libraryVersion != null) {
+                return false;
+            }
+        }
+        else if (!this.libraryVersion.equals(other.libraryVersion)) {
+            return false;
+        }
+        return true;
     }
 }
